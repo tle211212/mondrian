@@ -1623,9 +1623,11 @@ public class SqlConstraintUtils {
         String columnValue,
         boolean caseSensitive)
     {
+        Collection<String> t = new ArrayList<>();
+        t.add(columnValue);
         return constrainLevel(
             level, query, baseCube, aggStar,
-            new String[] {columnValue}, caseSensitive);
+            t, caseSensitive);
     }
 
     /**
@@ -1646,7 +1648,7 @@ public class SqlConstraintUtils {
         SqlQuery query,
         RolapCube baseCube,
         AggStar aggStar,
-        String[] columnValue,
+        Collection<String> columnValue,
         boolean caseSensitive)
     {
         // this method can be called within the context of shared members,
@@ -1702,7 +1704,7 @@ public class SqlConstraintUtils {
     }
 
     private static String getColumnValueConstraint(
-        SqlQuery query, String[] columnValues, boolean caseSensitive,
+        SqlQuery query, Collection<String> columnValues, boolean caseSensitive,
         String columnString, Dialect.Datatype datatype)
     {
         String constraint;

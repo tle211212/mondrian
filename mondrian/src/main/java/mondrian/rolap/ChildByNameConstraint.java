@@ -25,7 +25,7 @@ import java.util.*;
  * @author avix
  */
 class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
-    private final String[] childNames;
+    private final PriorityQueue<String> childNames;
     private final Object cacheKey;
 
     /**
@@ -33,16 +33,17 @@ class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
      *
      * @param childName Name of child
      */
-    public ChildByNameConstraint(Id.NameSegment childName) {
-        this.childNames = new String[]{childName.name};
+    public ChildByNameConstraint(Id.NameSegment childName) {        
+        this.childNames = new PriorityQueue<>();
+        this.childNames.add(childName.name);
         this.cacheKey = Arrays.asList(ChildByNameConstraint.class, childName);
     }
 
     public ChildByNameConstraint(List<Id.NameSegment> childNames) {
-        this.childNames = new String[childNames.size()];
+        this.childNames = new PriorityQueue<>(childNames.size());
         int i = 0;
         for (Id.NameSegment name : childNames) {
-            this.childNames[i++] = name.name;
+            this.childNames.add(name.name);            
         }
         this.cacheKey = Arrays.asList(
             ChildByNameConstraint.class, this.childNames);
@@ -72,17 +73,17 @@ class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
                 level, query, baseCube, aggStar, childNames, true));
     }
 
-    public String toString() {
-        return "ChildByNameConstraint(" + Arrays.toString(childNames) + ")";
+    public String toString() {        
+        return "ChildByNameConstraint(" + Arrays.toString(childNames.toArray()) + ")";
     }
 
     public Object getCacheKey() {
         return cacheKey;
     }
 
-    public List<String> getChildNames() {
-        return Arrays.asList(childNames);
-    }
+    public Collection<String> getChildNames() {
+        return childNames;
+    } 
 
 }
 
