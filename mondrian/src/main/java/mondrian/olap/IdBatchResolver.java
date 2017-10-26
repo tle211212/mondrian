@@ -15,8 +15,8 @@ import org.apache.commons.collections.*;
 import org.apache.log4j.Logger;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
-import static org.apache.commons.collections.CollectionUtils.filter;
 
 /**
  * Used to collect and resolve identifiers in groups of children
@@ -255,26 +255,32 @@ public final class IdBatchResolver {
     private List<Id.NameSegment> collectChildrenNameSegments(
         final Member parentMember, List<Id> children)
     {
-        filter(
-            children, new Predicate() {
-            // remove children we can't support
-                public boolean evaluate(Object theId)
-                {
-                    Id id = (Id)theId;
-                    return !Util.matches(parentMember, id.getSegments())
-                        && supportedIdentifier(id);
-                }
-            });
-        return new ArrayList(
-            CollectionUtils.collect(
-                children, new Transformer()
-            {
-                // convert the collection to a list of NameSegments
-            public Object transform(Object theId) {
-                Id id = (Id)theId;
-                return getLastSegment(id);
-            }
-        }));
+        return children.parallelStream()
+                           .filter(id -> (!Util.matches(parentMember, id.getSegments()) && supportedIdentifier(id)))
+                           .map(id -> (Id.NameSegment) getLastSegment(id))
+                           .collect(Collectors.toCollection(ArrayList::new));
+        
+//        filter(
+//            children, new Predicate() {
+//            // remove children we can't support
+//                public boolean evaluate(Object theId)
+//                {
+//                    Id id = (Id)theId;
+//                    return !Util.matches(parentMember, id.getSegments())
+//                        && supportedIdentifier(id);
+//                }
+//            });
+          
+//        return new ArrayList(
+//            CollectionUtils.collect(
+//                children, new Transformer()
+//            {
+//                // convert the collection to a list of NameSegments
+//            public Object transform(Object theId) {
+//                Id id = (Id)theId;
+//                return getLastSegment(id);
+//            }
+//        }));
     }
 
     private Id.Segment getLastSegment(Id id) {
@@ -337,14 +343,23 @@ public final class IdBatchResolver {
     private Collection<String> getOlapElementNames(
         OlapElement[] olapElements, final boolean uniqueName)
     {
-        return CollectionUtils.collect(
-            Arrays.asList(olapElements),
-            new Transformer() {
-                public Object transform(Object o) {
-                    return uniqueName ? ((OlapElement)o).getUniqueName()
-                        : ((OlapElement)o).getName();
-                }
-            });
+        if (uniqueName) {
+            return Arrays.stream(olapElements)
+                    .map(o -> o.getUniqueName())
+                    .collect(Collectors.toCollection(ArrayList::new));
+        } else {
+            return Arrays.stream(olapElements)
+                    .map(o -> o.getName())
+                    .collect(Collectors.toCollection(ArrayList::new));
+        }
+//        return CollectionUtils.collect(
+//            Arrays.asList(olapElements),
+//            new Transformer() {
+//                public Object transform(Object o) {
+//                    return uniqueName ? ((OlapElement)o).getUniqueName()
+//                        : ((OlapElement)o).getName();
+//                }
+//            });
     }
 
     /**

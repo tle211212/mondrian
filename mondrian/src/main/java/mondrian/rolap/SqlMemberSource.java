@@ -937,6 +937,9 @@ RME is this right
         List<RolapMember> children,
         MemberChildrenConstraint constraint)
     {
+        LOGGER.debug("--------------------------------------------------------");
+        LOGGER.debug("Start Get Member Children 2");
+        LOGGER.debug("--------------------------------------------------------");
         Pair<String, List<SqlStatement.Type>> pair;
         boolean parentChild;
         final RolapLevel parentLevel = parentMember.getLevel();
@@ -979,9 +982,15 @@ RME is this right
             boolean checkCacheStatus = true;
 
             final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
+            LOGGER.debug("--------------------------------------------------------");
+            LOGGER.debug("Before stmt.getResultSet() in get member children 2");
+            LOGGER.debug("--------------------------------------------------------");
             ResultSet resultSet = stmt.getResultSet();
             RolapMember parentMember2 = RolapUtil.strip(parentMember);
             Execution execution = Locus.peek().execution;
+            LOGGER.debug("--------------------------------------------------------");
+            LOGGER.debug("Before resultSet.next() in get member children 2");
+            LOGGER.debug("--------------------------------------------------------");
             while (resultSet.next()) {
                 // Check if the MDX query was canceled.
                 CancellationChecker.checkCancelOrTimeout(

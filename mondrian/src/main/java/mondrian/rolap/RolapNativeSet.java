@@ -24,6 +24,7 @@ import org.apache.commons.collections.*;
 import org.apache.log4j.Logger;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -317,11 +318,28 @@ public abstract class RolapNativeSet extends RolapNative {
             if (needsFiltering(tupleList)) {
                 final Predicate memberInaccessible =
                     memberInaccessiblePredicate();
-                filter(
-                    tupleList, tupleAccessiblePredicate(memberInaccessible));
+                
+                List<List<Member>> tmp = tupleList;
+                tmp = tmp.parallelStream()
+                         .filter(o -> !exists(o, memberInaccessible))
+                         .collect(Collectors.toList());
+                tupleList = (TupleList) tmp;
+                                         
+//                filter(
+//                    tupleList, tupleAccessiblePredicate(memberInaccessible));
             }
             return tupleList;
         }
+        
+//        private Predicate tupleAccessiblePredicate(
+//            final Predicate memberInaccessible)
+//        {
+//            return new Predicate() {
+//                @SuppressWarnings("unchecked")
+//                public boolean evaluate(Object o) {
+//                    return !exists((List<Member>) o, memberInaccessible);
+//                }};
+//        }
 
         private boolean needsFiltering(TupleList tupleList) {
             return tupleList.size() > 0

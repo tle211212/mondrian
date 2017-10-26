@@ -19,14 +19,10 @@ import mondrian.rolap.sql.TupleConstraint;
 import mondrian.spi.DataSourceChangeListener;
 import mondrian.util.*;
 
-import org.apache.commons.collections.Predicate;
 
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.apache.commons.collections.CollectionUtils.filter;
 
 /**
  * Encapsulation of member caching.
@@ -167,7 +163,9 @@ public class MemberCacheHelper implements MemberCache {
             return null;
         }
         
-        children = children.parallelStream().filter(o -> childNames.contains(o.getName())).collect(Collectors.toList());
+        children = children.parallelStream()
+                           .filter(o -> childNames.contains(o.getName()))
+                           .collect(Collectors.toCollection(ArrayList::new));
 
         boolean foundAll = children.size() == childNames.size();
         return !foundAll ? null : children;

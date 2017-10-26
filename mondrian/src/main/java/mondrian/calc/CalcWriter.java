@@ -41,9 +41,11 @@ public class CalcWriter {
     }
 
     public void visitChild(int ordinal, Calc calc) {
-        indent();
-        calc.accept(this);
-        outdent();
+        if (calc != null) {
+            indent();
+            calc.accept(this);
+            outdent();
+        }
     }
 
     public void visitCalc(
@@ -53,7 +55,7 @@ public class CalcWriter {
         Calc[] childCalcs)
     {
         writer.print(getLinePrefix());
-        writer.print(name);
+        writer.print(name); 
         final Map<String, Object> parentArgs = parentArgMap.get(calc);
         if (parentArgs != null && !parentArgs.isEmpty()) {
             //noinspection unchecked
