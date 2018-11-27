@@ -319,27 +319,16 @@ public abstract class RolapNativeSet extends RolapNative {
                 final Predicate memberInaccessible =
                     memberInaccessiblePredicate();
                 
-                List<List<Member>> tmp = tupleList;
-                tmp = tmp.parallelStream()
-                         .filter(o -> !exists(o, memberInaccessible))
-                         .collect(Collectors.toList());
-                tupleList = (TupleList) tmp;
-                                         
-//                filter(
-//                    tupleList, tupleAccessiblePredicate(memberInaccessible));
+                final List<List<Member>> tmp = new ArrayList<>(tupleList);                
+                final List<List<Member>> tmp2 = tmp.parallelStream()
+                                                   .filter(o -> !exists(o, memberInaccessible))
+                                                   .collect(Collectors.toList());
+                
+                tupleList.clear();
+                tupleList.addAll(tmp2);
             }
             return tupleList;
         }
-        
-//        private Predicate tupleAccessiblePredicate(
-//            final Predicate memberInaccessible)
-//        {
-//            return new Predicate() {
-//                @SuppressWarnings("unchecked")
-//                public boolean evaluate(Object o) {
-//                    return !exists((List<Member>) o, memberInaccessible);
-//                }};
-//        }
 
         private boolean needsFiltering(TupleList tupleList) {
             return tupleList.size() > 0
@@ -396,16 +385,6 @@ public abstract class RolapNativeSet extends RolapNative {
                     return ((Member) o).isHidden();
                 }
             };
-        }
-
-        private Predicate tupleAccessiblePredicate(
-            final Predicate memberInaccessible)
-        {
-            return new Predicate() {
-                @SuppressWarnings("unchecked")
-                public boolean evaluate(Object o) {
-                    return !exists((List<Member>) o, memberInaccessible);
-                }};
         }
 
         private void addLevel(TupleReader tr, CrossJoinArg arg) {
