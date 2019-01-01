@@ -196,6 +196,7 @@ public class Main extends TestSuite {
             addTest(suite, HierarchyBugTest.class);
             addTest(suite, ScheduleTest.class);
             addTest(suite, UtilTestCase.class);
+            addTest(suite, CancellationCheckerTest.class);
             addTest(suite, PartiallyOrderedSetTest.class);
             addTest(suite, ConcatenableListTest.class);
             addTest(suite, ExpiringReferenceTest.class);
@@ -355,6 +356,7 @@ public class Main extends TestSuite {
 
             addTest(suite, RolapCubeHierarchyTest.class);
             addTest(suite, RolapCubeDimensionTest.class);
+            addTest(suite, RolapUtilTest.class);
 
             // Must be the last test.
             addTest(suite, TerminatorTest.class);

@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2017 Pentaho and others
+// Copyright (C) 2005-2018 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -16,11 +16,9 @@ import mondrian.calc.TupleList;
 import mondrian.calc.impl.ArrayTupleList;
 import mondrian.calc.impl.ListTupleList;
 import mondrian.calc.impl.UnaryTupleList;
-import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.fun.CrossJoinFunDef;
 import mondrian.olap.fun.FunUtil;
-import mondrian.olap.fun.ValidMeasureFunDef;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
@@ -1492,6 +1490,12 @@ public class SqlTupleReader implements TupleReader {
                         aggColumn.getExpression());
                 sqlQuery.addWhere(condition.toString(sqlQuery));
                 aggColumn.getTable().addToFrom(sqlQuery, false, true);
+            } else if (levelCollapsed) {
+                RolapStar.Column starColumn =
+                  ((RolapCubeLevel) currLevel).getStarKeyColumn();
+                int bitPos = starColumn.getBitPosition();
+                AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+                aggColumn.getTable().addToFrom(sqlQuery, false, true);
             }
 
             RolapProperty[] properties = currLevel.getProperties();
@@ -1511,7 +1515,7 @@ public class SqlTupleReader implements TupleReader {
                 } else {
                     propSql = property.getExp().getExpression(sqlQuery);
                 }
-                final String propAlias = sqlQuery.addSelect(propSql, null);
+                final String propAlias = sqlQuery.addSelect(propSql, property.getType().getInternalType());
                 if (needsGroupBy) {
                     // Certain dialects allow us to eliminate properties
                     // from the group by that are functionally dependent
@@ -1792,20 +1796,6 @@ public class SqlTupleReader implements TupleReader {
                             // levels that are not present in the current
                             // target group.
                             continue;
-                        }
-                        // member constraint
-                        // with name columns in agg table is not supported
-                        if (arg instanceof MemberListCrossJoinArg) {
-                            if (level.getNameExp() != null
-                                    && !Util.equals(
-                                        level.getNameExp(), level.getKeyExp()))
-                            {
-                                LOGGER.warn(
-                                    ""
-                                    + "Member constraint"
-                                    + " is not supported with name column in agg table");
-                                return null;
-                            }
                         }
                         levelBitKey.set(column.getBitPosition());
                     }
