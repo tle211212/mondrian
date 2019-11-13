@@ -102,13 +102,26 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             String expr = column.generateExprString(sqlQuery);
 
             StarColumnPredicate predicate = getColumnPredicate(i);
-            final String where = RolapStar.Column.createInExpr(
-                expr,
-                predicate,
-                column.getDatatype(),
-                sqlQuery);
-            if (!where.equals("true")) {
-                sqlQuery.addWhere(where);
+            
+            // dinhnn (fhs): Only add in clause to sql when size <= 1000
+            boolean isAddWhereClause = true;
+            
+            if (predicate instanceof ListColumnPredicate) {
+                ListColumnPredicate listColumnPredicate = (ListColumnPredicate)predicate;
+                if (listColumnPredicate.getPredicates().size() > 1000) {
+                    isAddWhereClause = false;
+                }
+            }
+            
+            if (isAddWhereClause) {
+                final String where = RolapStar.Column.createInExpr(
+                        expr,
+                        predicate,
+                        column.getDatatype(),
+                        sqlQuery);
+                if (!where.equals("true")) {
+                    sqlQuery.addWhere(where);
+                }
             }
 
             if (countOnly) {
