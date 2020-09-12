@@ -265,6 +265,9 @@ public class Execution {
                 }
                 fireExecutionEndEvent();
             } finally {
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ex) {}
                 if (needInterrupt) {
                     Thread.currentThread().interrupt();
                 }
