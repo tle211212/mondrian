@@ -78,10 +78,9 @@ public class NotificationMemoryMonitor extends AbstractMemoryMonitor {
             final Object unused)
         {
             final String type = notification.getType();
-
             if (type.equals(MemoryNotificationInfo.MEMORY_THRESHOLD_EXCEEDED)) {
                 final MemoryUsage usage = TENURED_POOL.getUsage();
-
+                getLogger().info("MemoryMonitor event handler called: " + usage.getUsed() + " " + usage.getMax());
                 notifyListeners(usage.getUsed(), usage.getMax());
             }
         }
@@ -117,6 +116,7 @@ public class NotificationMemoryMonitor extends AbstractMemoryMonitor {
      * @param newLowThreshold the new threshold.
      */
     protected void notifyNewLowThreshold(final long newLowThreshold) {
+        getLogger().info("MemoryMonitor new threshold: " + newLowThreshold);
         if (newLowThreshold == Long.MAX_VALUE) {
             TENURED_POOL.setUsageThreshold(0);
         } else {

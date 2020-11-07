@@ -112,7 +112,7 @@ public abstract class AbstractMemoryMonitor
     }
 
     public boolean addListener(Listener listener, int percentage) {
-        getLogger().info("addListener enter");
+        getLogger().info("addListener enter: " + listener.getClass().getName() + " " + percentage);
         try {
 /*
             // Should this listener being added be immediately
