@@ -28,9 +28,12 @@ import mondrian.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 /**
  * Constructs a Pair<BitKey, StarPredicate> based on an tuple list and
  * measure, along with the string representation of the predicate.
@@ -293,9 +296,9 @@ public class CompoundPredicateInfo {
         Map<BitKey, List<RolapCubeMember[]>> compoundGroupMap,
         RolapCube baseCube, Evaluator evaluator)
     {
-        List<StarPredicate> compoundPredicateList =
-            new ArrayList<StarPredicate> ();
-        for (List<RolapCubeMember[]> group : compoundGroupMap.values()) {
+        Collection<StarPredicate> compoundPredicateCollection =
+            new ConcurrentLinkedQueue<StarPredicate> ();
+        compoundGroupMap.values().parallelStream().forEach(group -> {
             // e.g {[USA].[CA], [Canada].[BC]}
             StarPredicate compoundGroupPredicate = null;
             for (RolapCubeMember[] tuple : group) {
@@ -319,10 +322,11 @@ public class CompoundPredicateInfo {
             if (compoundGroupPredicate != null) {
                 // Sometimes the compound member list does not constrain any
                 // columns; for example, if only AllLevel is present.
-                compoundPredicateList.add(compoundGroupPredicate);
+                compoundPredicateCollection.add(compoundGroupPredicate);
             }
-        }
+        });
 
+        List<StarPredicate> compoundPredicateList = new ArrayList<>(compoundPredicateCollection);
         StarPredicate compoundPredicate = null;
 
         if (compoundPredicateList.size() > 1) {
