@@ -301,6 +301,7 @@ public class CompoundPredicateInfo {
         compoundGroupMap.values().parallelStream().forEach(group -> {
             // e.g {[USA].[CA], [Canada].[BC]}
             StarPredicate compoundGroupPredicate = null;
+            ArrayList<StarPredicate> orListMember = new ArrayList<>();
             for (RolapCubeMember[] tuple : group) {
                 // [USA].[CA]
                 StarPredicate tuplePredicate = null;
@@ -310,13 +311,14 @@ public class CompoundPredicateInfo {
                         member, baseCube, tuplePredicate, evaluator);
                 }
                 if (tuplePredicate != null) {
-                    if (compoundGroupPredicate == null) {
-                        compoundGroupPredicate = tuplePredicate;
-                    } else {
-                        compoundGroupPredicate =
-                            compoundGroupPredicate.or(tuplePredicate);
-                    }
+                    orListMember.add(tuplePredicate);
                 }
+            }
+            if (orListMember.size() == 1) {
+                compoundGroupPredicate = orListMember.get(0);
+            }
+            else if (!orListMember.isEmpty()) {
+                compoundGroupPredicate = new OrPredicate(orListMember);
             }
 
             if (compoundGroupPredicate != null) {
